@@ -1,34 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LIFE STEALER</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shadow Provinces</title>
   <style>
-    :root {
-      --cyan: #54e5ff;
-      --gold: #ffc857;
-      --red: #ff5574;
-      --glass: rgba(7, 12, 27, 0.86);
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
+    * { box-sizing: border-box; }
     body {
       margin: 0;
       overflow: hidden;
-      background: #0b1020;
-      color: black;
-      font-family: Arial, sans-serif;
+      background: #18291f;
+      color: #efe7d1;
+      font: 16px Georgia, serif;
       user-select: none;
     }
+    canvas { display: block; }
 
-    canvas {
-      display: block;
-      width: 100vw;
-      height: 100vh;
+    #title {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      display: grid;
+      place-items: center;
+      background:
+        linear-gradient(#1e351fdd, #10150fff),
+        repeating-linear-gradient(45deg, #b8a66e 0 2px, transparent 2px 12px);
+    }
+    #title-panel {
+      width: min(560px, calc(100% - 40px));
+      padding: 42px;
+      border: 2px solid #c9ad63;
+      background: #171d18ef;
+      text-align: center;
+      box-shadow: 0 20px 70px #000;
+    }
+    h1 {
+      margin: 0 0 12px;
+      color: #f2d58a;
+      letter-spacing: 5px;
+    }
+    button {
+      margin-top: 12px;
+      padding: 12px 24px;
+      border: 1px solid #c9ad63;
+      background: #26391f;
+      color: #fff4c7;
+      font: inherit;
+      cursor: pointer;
     }
 
     #hud {
@@ -36,309 +54,59 @@
       inset: 0;
       pointer-events: none;
     }
-
     #mission {
       position: absolute;
-      top: 20px;
-      left: 20px;
-      width: 330px;
-      padding: 16px 18px;
-      border: 1px solid rgba(84, 229, 255, 0.5);
-      border-radius: 12px;
-      background: var(--glass);
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+      top: 18px;
+      left: 18px;
+      max-width: 330px;
+      padding: 13px 16px;
+      border-left: 3px solid #d7bb69;
+      background: #152017dd;
     }
-
-    #mission h2 {
-      margin: 0 0 6px;
-      color: var(--cyan);
-      font-size: 15px;
-      letter-spacing: 2px;
-    }
-
-    #objective {
-      font-size: 17px;
-      line-height: 1.35;
-    }
-
-    #stats {
+    #minimap {
       position: absolute;
-      top: 20px;
-      right: 20px;
-      display: flex;
-      gap: 10px;
-    }
-
-    .stat {
-      min-width: 110px;
-      padding: 10px 14px;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 10px;
-      background: var(--glass);
-      text-align: right;
-    }
-
-    .stat strong {
-      display: block;
-      color: var(--gold);
-      font-size: 20px;
-    }
-
-    #ability-bar {
-      position: absolute;
-      bottom: 25px;
-      left: 50%;
-      display: flex;
-      gap: 8px;
-      transform: translateX(-50%);
-    }
-
-    .ability {
-      width: 72px;
-      height: 72px;
-      display: grid;
-      place-items: center;
-      border: 2px solid rgba(255, 255, 255, 0.18);
+      right: 18px;
+      bottom: 18px;
+      width: 170px;
+      height: 170px;
+      border: 2px solid #d7bb69;
       border-radius: 50%;
-      background: var(--glass);
-      font-size: 24px;
-      transition: 0.15s;
+      background: #1a291e;
     }
-
-    .ability.active {
-      border-color: var(--cyan);
-      background: rgba(84, 229, 255, 0.22);
-      box-shadow: 0 0 22px var(--cyan);
-      transform: translateY(-8px) scale(1.08);
-    }
-
     #prompt {
       position: absolute;
       left: 50%;
-      bottom: 115px;
-      min-width: 220px;
-      padding: 10px 16px;
-      border-radius: 8px;
-      background: var(--glass);
-      text-align: center;
+      bottom: 110px;
+      padding: 9px 14px;
+      border: 1px solid #d7bb69;
+      background: #152017ee;
       transform: translateX(-50%);
       opacity: 0;
-      transition: opacity 0.15s;
     }
-
-    #prompt.visible {
-      opacity: 1;
-    }
-
-    #minimap {
-      position: absolute;
-      right: 20px;
-      bottom: 20px;
-      width: 170px;
-      height: 170px;
-      overflow: hidden;
-      border: 2px solid rgba(84, 229, 255, 0.6);
-      border-radius: 50%;
-      background: rgba(8, 18, 31, 0.88);
-    }
-
-    #toast {
-      position: absolute;
-      top: 130px;
-      left: 50%;
-      padding: 12px 20px;
-      border: 1px solid var(--cyan);
-      border-radius: 8px;
-      background: var(--glass);
-      text-align: center;
-      transform: translate(-50%, -20px);
-      opacity: 0;
-      transition: 0.25s;
-    }
-
-    #toast.visible {
-      transform: translate(-50%, 0);
-      opacity: 1;
-    }
-
-    #title-screen,
-    #game-over,
-    #win-screen {
-      position: fixed;
-      inset: 0;
-      z-index: 20;
-      display: grid;
-      place-items: center;
-      background:
-        radial-gradient(circle at center, rgba(84, 229, 255, 0.12), transparent 35%),
-        linear-gradient(135deg, #080b16, #18213b);
-    }
-
-    .panel {
-      width: min(560px, calc(100% - 40px));
-      padding: 45px;
-      border: 1px solid rgba(84, 229, 255, 0.45);
-      border-radius: 18px;
-      background: rgba(5, 9, 22, 0.92);
-      text-align: center;
-      box-shadow: 0 25px 100px black;
-    }
-
-    .panel h1 {
-      margin: 0;
-      color: white;
-      font-size: 52px;
-      letter-spacing: 8px;
-      text-shadow: 0 0 25px var(--cyan);
-    }
-
-    .panel p {
-      margin: 18px 0 28px;
-      color: #c9d7ed;
-      line-height: 1.7;
-    }
-
-    button {
-      min-width: 180px;
-      padding: 14px 20px;
-      border: 1px solid var(--cyan);
-      border-radius: 8px;
-      background: rgba(84, 229, 255, 0.12);
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-      transition: 0.15s;
-    }
-
-    button:hover {
-      background: var(--cyan);
-      color: #07101c;
-      box-shadow: 0 0 20px rgba(84, 229, 255, 0.7);
-    }
-
-    #game-over,
-    #win-screen {
-      display: none;
-    }
-
-    #crosshair {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 7px;
-      height: 7px;
-      border: 2px solid white;
-      border-radius: 50%;
-      transform: translate(-50%, -50%);
-      box-shadow: 0 0 5px black;
-    }
-
-    #controls {
-      position: absolute;
-      left: 20px;
-      bottom: 20px;
-      padding: 10px 12px;
-      border-radius: 8px;
-      background: rgba(0, 0, 0, 0.55);
-      color: #bac8d9;
-      font-size: 13px;
-      line-height: 1.7;
-    }
-
-    .detected {
-      position: fixed;
-      inset: 0;
-      z-index: 10;
-      border: 8px solid transparent;
-      pointer-events: none;
-      transition: border-color 0.15s;
-    }
-
-    .detected.active {
-      border-color: rgba(255, 60, 90, 0.55);
-      box-shadow: inset 0 0 100px rgba(255, 0, 50, 0.25);
-    }
-
-    @media (max-width: 750px) {
-      #mission {
-        width: 250px;
-      }
-
-      #minimap,
-      #controls {
-        display: none;
-      }
-
-      .ability {
-        width: 58px;
-        height: 58px;
-      }
-    }
+    #prompt.visible { opacity: 1; }
   </style>
 </head>
 <body>
   <canvas id="game"></canvas>
 
+  <div id="title">
+    <div id="title-panel">
+      <h1>SHADOW PROVINCES</h1>
+      <p>
+        Explore a feudal-inspired open world. Meet villagers, gather supplies,
+        evade scouts, and complete missions without copying another game.
+      </p>
+      <button id="start">BEGIN JOURNEY</button>
+    </div>
+  </div>
+
   <div id="hud">
     <div id="mission">
-      <h2>MISSION 1</h2>
-      <div id="objective">Find a way to escape the prison</div>
+      <b>Active Contract</b><br>
+      <span id="objective">Investigate the ruined shrine</span>
     </div>
-
-    <div id="stats">
-      <div class="stat">
-        Gold
-        <strong id="gold">0</strong>
-      </div>
-      <div class="stat">
-        Cash
-        <strong id="cash">$0</strong>
-      </div>
-    </div>
-
-    <div id="crosshair"></div>
-    <div id="prompt"></div>
-    <div id="toast"></div>
-
-    <div id="ability-bar"></div>
-
     <canvas id="minimap" width="170" height="170"></canvas>
-
-    <div id="controls">
-      <b>WASD</b> Move<br />
-      <b>Shift</b> Sprint · <b>C</b> Crouch<br />
-      <b>E</b> Steal/Collect · <b>Q</b> Use ability<br />
-      <b>1–5</b> Select ability · <b>Esc</b> Pause
-    </div>
-  </div>
-
-  <div id="detected" class="detected"></div>
-
-  <div id="title-screen">
-    <div class="panel">
-      <h1>LIFE STEALER</h1>
-      <p>
-        Accused of a crime you did not commit, you must escape the world's
-        harshest prison—and discover the legendary power hidden within.
-      </p>
-      <button id="start-button">BEGIN ESCAPE</button>
-    </div>
-  </div>
-
-  <div id="game-over">
-    <div class="panel">
-      <h1>CAUGHT</h1>
-      <p>The prison guards found you. Your escape has failed.</p>
-      <button id="retry-button">TRY AGAIN</button>
-    </div>
-  </div>
-
-  <div id="win-screen">
-    <div class="panel">
-      <h1>ESCAPED</h1>
-      <p>The prison is behind you. A world of treasures awaits.</p>
-      <button id="continue-button">PLAY AGAIN</button>
-    </div>
+    <div id="prompt"></div>
   </div>
 
   <script>
@@ -346,284 +114,108 @@
 
     const canvas = document.getElementById("game");
     const ctx = canvas.getContext("2d");
-
-    const minimap = document.getElementById("minimap");
-    const mapCtx = minimap.getContext("2d");
-
-    const titleScreen = document.getElementById("title-screen");
-    const gameOverScreen = document.getElementById("game-over");
-    const winScreen = document.getElementById("win-screen");
-    const objectiveElement = document.getElementById("objective");
+    const mini = document.getElementById("minimap");
+    const miniCtx = mini.getContext("2d");
     const promptElement = document.getElementById("prompt");
-    const toastElement = document.getElementById("toast");
-    const goldElement = document.getElementById("gold");
-    const cashElement = document.getElementById("cash");
-    const abilityBar = document.getElementById("ability-bar");
-    const detectedElement = document.getElementById("detected");
+    const objectiveElement = document.getElementById("objective");
 
-    const WORLD_WIDTH = 1500;
-    const WORLD_HEIGHT = 1000;
-    const PRISON_WIDTH = 720;
-    const PRISON_HEIGHT = 560;
-    const PRISON_X = 390;
-    const PRISON_Y = 220;
-
+    const WORLD = 2400;
+    const keys = {};
     let running = false;
-    let paused = false;
-    let lastTime = 0;
-    let toastTimeout;
     let cameraX = 0;
     let cameraY = 0;
 
-    const keys = Object.create(null);
-
     const player = {
-      x: 460,
-      y: 670,
-      radius: 14,
-      speed: 175,
+      x: 1200,
+      y: 1300,
+      radius: 12,
+      speed: 180,
       angle: 0,
       crouching: false,
-      activeAbility: "Shadow",
-      abilities: ["Shadow"],
-      detected: 0,
-      gold: 0,
-      cash: 0
+      concealed: false
     };
 
-    const mission = {
-      id: "prison_escape",
-      title: "Prison Escape",
-      objective: "Steal Shadow, find the key and reach the exit",
-      stage: 0,
-      completed: false
-    };
-
-    const shadows = [
-      { x: 520, y: 380, radius: 16, collected: false }
+    const villages = [
+      { x: 850, y: 760, w: 480, h: 310, name: "Pine Gate" },
+      { x: 1500, y: 1450, w: 430, h: 290, name: "Autumn Harbor" }
     ];
 
-    const guards = [
-      {
-        x: 720,
-        y: 330,
-        radius: 14,
-        angle: 0,
-        patrolStart: 610,
-        patrolEnd: 820,
-        speed: 65,
-        direction: 1,
-        detectRange: 155,
-        detected: false
-      },
-      {
-        x: 650,
-        y: 650,
-        radius: 14,
-        angle: 0,
-        patrolStart: 420,
-        patrolEnd: 720,
-        speed: 55,
-        direction: -1,
-        detectRange: 145,
-        detected: false
-      }
+    const buildings = [
+      { x: 900, y: 820, w: 130, h: 75 },
+      { x: 1080, y: 830, w: 130, h: 75 },
+      { x: 950, y: 950, w: 150, h: 80 },
+      { x: 1550, y: 1500, w: 120, h: 72 },
+      { x: 1720, y: 1510, w: 130, h: 72 },
+      { x: 1580, y: 1630, w: 160, h: 75 }
     ];
 
-    const powerTargets = [
-      {
-        x: 530,
-        y: 380,
-        radius: 18,
-        ability: "Shadow",
-        symbol: "◈",
-        collected: false
-      },
-      {
-        x: 930,
-        y: 530,
-        radius: 18,
-        ability: "Electricity",
-        symbol: "ϟ",
-        collected: false
-      },
-      {
-        x: 1080,
-        y: 700,
-        radius: 18,
-        ability: "Fire",
-        symbol: "◆",
-        collected: false
-      },
-      {
-        x: 1260,
-        y: 260,
-        radius: 18,
-        ability: "Metal",
-        symbol: "⬢",
-        collected: false
-      }
+    const scouts = [
+      { x: 1180, y: 980, patrolX: 1180, patrolY: 980,
+        range: 150, angle: 0, detected: 0 },
+      { x: 1460, y: 1250, patrolX: 1460, patrolY: 1250,
+        range: 145, angle: 1.2, detected: 0 },
+      { x: 1760, y: 1700, patrolX: 1760, patrolY: 1700,
+        range: 150, angle: 3, detected: 0 }
     ];
 
-    const key = {
-      x: 600,
-      y: 255,
-      radius: 12,
-      collected: false
-    };
-
-    const treasure = {
-      x: 1120,
-      y: 380,
-      radius: 18,
-      collected: false,
-      value: 1200
-    };
-
-    const exit = {
-      x: 1040,
-      y: 180,
-      radius: 34
-    };
-
-    const walls = [
-      { x: 390, y: 220, w: 720, h: 25 },
-      { x: 390, y: 755, w: 720, h: 25 },
-      { x: 390, y: 220, w: 25, h: 560 },
-      { x: 1085, y: 220, w: 25, h: 560 },
-      { x: 550, y: 220, w: 25, h: 210 },
-      { x: 550, y: 520, w: 25, h: 235 },
-      { x: 760, y: 220, w: 25, h: 180 },
-      { x: 760, y: 480, w: 25, h: 275 },
-      { x: 900, y: 220, w: 25, h: 320 },
-      { x: 900, y: 620, w: 25, h: 135 },
-      { x: 390, y: 430, w: 180, h: 25 },
-      { x: 650, y: 430, w: 110, h: 25 }
+    const shrines = [
+      { x: 650, y: 430, discovered: false, name: "Stone Shrine" },
+      { x: 2050, y: 650, discovered: false, name: "Mountain Shrine" },
+      { x: 650, y: 2050, discovered: false, name: "Forest Shrine" }
     ];
 
-    const abilityStyles = {
-      Shadow: "◈",
-      Electricity: "ϟ",
-      Fire: "◆",
-      Metal: "⬢"
-    };
+    let contractComplete = false;
 
     function resize() {
-      canvas.width = window.innerWidth * devicePixelRatio;
-      canvas.height = window.innerHeight * devicePixelRatio;
-      canvas.style.width = window.innerWidth + "px";
-      canvas.style.height = window.innerHeight + "px";
-      ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = innerWidth * dpr;
+      canvas.height = innerHeight * dpr;
+      canvas.style.width = innerWidth + "px";
+      canvas.style.height = innerHeight + "px";
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
+    addEventListener("resize", resize);
+    resize();
 
-    function resetGame() {
-      player.x = 460;
-      player.y = 670;
-      player.crouching = false;
-      player.activeAbility = "Shadow";
-      player.abilities = ["Shadow"];
-      player.detected = 0;
-      player.gold = 0;
-      player.cash = 0;
-
-      mission.stage = 0;
-      mission.objective =
-        "Steal Shadow, find the key and reach the exit";
-      mission.completed = false;
-
-      key.collected = false;
-      treasure.collected = false;
-
-      for (const target of powerTargets)
-        target.collected = false;
-
-      guards[0].x = 720;
-      guards[0].y = 330;
-      guards[0].detected = false;
-
-      guards[1].x = 650;
-      guards[1].y = 650;
-      guards[1].detected = false;
-
-      updateHUD();
-    }
-
-    function startGame() {
-      resetGame();
-      titleScreen.style.display = "none";
-      gameOverScreen.style.display = "none";
-      winScreen.style.display = "none";
+    document.getElementById("start").addEventListener("click", () => {
+      document.getElementById("title").style.display = "none";
       running = true;
-      paused = false;
-      lastTime = performance.now();
       requestAnimationFrame(loop);
+    });
+
+    addEventListener("keydown", e => {
+      keys[e.code] = true;
+      if (e.code === "KeyC") player.crouching = true;
+    });
+    addEventListener("keyup", e => {
+      keys[e.code] = false;
+      if (e.code === "KeyC") player.crouching = false;
+    });
+
+    function distance(a, b) {
+      return Math.hypot(a.x - b.x, a.y - b.y);
     }
 
-    function showToast(message) {
-      toastElement.textContent = message;
-      toastElement.classList.add("visible");
-
-      clearTimeout(toastTimeout);
-      toastTimeout = setTimeout(() => {
-        toastElement.classList.remove("visible");
-      }, 1800);
-    }
-
-    function updateHUD() {
-      goldElement.textContent = player.gold.toLocaleString();
-      cashElement.textContent =
-        "$" + player.cash.toLocaleString();
-
-      objectiveElement.textContent = mission.objective;
-      abilityBar.innerHTML = "";
-
-      player.abilities.forEach((ability, index) => {
-        const item = document.createElement("div");
-        item.className =
-          "ability" +
-          (ability === player.activeAbility ? " active" : "");
-
-        item.textContent =
-          abilityStyles[ability] || "●";
-
-        item.title =
-          `${index + 1}: ${ability}`;
-
-        abilityBar.appendChild(item);
-      });
+    function hitsBuilding(x, y, radius) {
+      return buildings.some(b =>
+        x + radius > b.x &&
+        x - radius < b.x + b.w &&
+        y + radius > b.y &&
+        y - radius < b.y + b.h
+      );
     }
 
     function update(dt) {
-      if (paused)
-        return;
+      if (!running) return;
 
-      player.crouching =
-        keys.KeyC ||
-        keys.ControlLeft ||
-        keys.ControlRight;
-
-      let dx =
-        (keys.KeyD ? 1 : 0) -
-        (keys.KeyA ? 1 : 0);
-
-      let dy =
-        (keys.KeyS ? 1 : 0) -
-        (keys.KeyW ? 1 : 0);
-
-      const length =
-        Math.hypot(dx, dy) || 1;
-
+      let dx = (keys.KeyD ? 1 : 0) - (keys.KeyA ? 1 : 0);
+      let dy = (keys.KeyS ? 1 : 0) - (keys.KeyW ? 1 : 0);
+      const length = Math.hypot(dx, dy) || 1;
       dx /= length;
       dy /= length;
 
-      let speed =
-        keys.ShiftLeft ||
-        keys.ShiftRight
-          ? player.speed * 1.45
-          : player.speed;
-
-      if (player.crouching)
-        speed *= 0.45;
+      let speed = keys.ShiftLeft ? player.speed * 1.65 : player.speed;
+      if (player.crouching) speed *= 0.45;
 
       const oldX = player.x;
       const oldY = player.y;
@@ -631,788 +223,229 @@
       player.x += dx * speed * dt;
       player.y += dy * speed * dt;
 
-      if (player.x < player.radius)
-        player.x = player.radius;
+      player.x = Math.max(player.radius, Math.min(WORLD - player.radius, player.x));
+      player.y = Math.max(player.radius, Math.min(WORLD - player.radius, player.y));
 
-      if (player.y < player.radius)
-        player.y = player.radius;
-
-      if (player.x > WORLD_WIDTH - player.radius)
-        player.x = WORLD_WIDTH - player.radius;
-
-      if (player.y > WORLD_HEIGHT - player.radius)
-        player.y = WORLD_HEIGHT - player.radius;
-
-      if (collidesWithWalls(player)) {
+      if (hitsBuilding(player.x, player.y, player.radius)) {
         player.x = oldX;
         player.y = oldY;
       }
 
-      if (dx !== 0 || dy !== 0)
-        player.angle =
-          Math.atan2(dy, dx);
+      if (dx || dy) player.angle = Math.atan2(dy, dx);
 
-      updateGuards(dt);
-      checkInteractions();
+      updateScouts(dt);
+      updateInteractions();
       updateCamera();
     }
 
-    function collidesWithWalls(circle) {
-      for (const wall of walls) {
-        const closestX =
-          Math.max(
-            wall.x,
-            Math.min(circle.x, wall.x + wall.w));
+    function updateScouts(dt) {
+      for (const scout of scouts) {
+        scout.angle += dt * 0.55;
+        scout.x = scout.patrolX + Math.cos(scout.angle) * 55;
+        scout.y = scout.patrolY + Math.sin(scout.angle) * 55;
 
-        const closestY =
-          Math.max(
-            wall.y,
-            Math.min(circle.y, wall.y + wall.h));
+        const d = distance(player, scout);
+        let visibleRange = scout.range;
 
-        const dx =
-          circle.x - closestX;
+        if (player.crouching) visibleRange *= 0.42;
+        if (player.concealed) visibleRange *= 0.2;
 
-        const dy =
-          circle.y - closestY;
-
-        if (dx * dx + dy * dy <
-            circle.radius * circle.radius)
-          return true;
+        if (d < visibleRange) scout.detected += dt;
+        else scout.detected = Math.max(0, scout.detected - dt * 0.7);
       }
-
-      return false;
     }
 
-    function updateGuards(dt) {
-      let totalDetect = 0;
+    function updateInteractions() {
+      let text = "";
 
-      for (const guard of guards) {
-        if (guard.patrolStart <
-            guard.patrolEnd) {
-          guard.x +=
-            guard.speed *
-            guard.direction *
-            dt;
-
-          if (guard.x <= guard.patrolStart ||
-              guard.x >= guard.patrolEnd)
-            guard.direction *= -1;
-
-          guard.angle =
-            guard.direction > 0
-              ? 0
-              : Math.PI;
-        } else {
-          guard.y +=
-            guard.speed *
-            guard.direction *
-            dt;
-
-          if (guard.y <= guard.patrolStart ||
-              guard.y >= guard.patrolEnd)
-            guard.direction *= -1;
-
-          guard.angle =
-            guard.direction > 0
-              ? Math.PI / 2
-              : -Math.PI / 2;
-        }
-
-        const distance =
-          Math.hypot(
-            player.x - guard.x,
-            player.y - guard.y);
-
-        const canDetect =
-          distance <
-          (
-            player.crouching
-              ? guard.detectRange * 0.38
-              : guard.detectRange
-          ) &&
-          player.activeAbility !== "Shadow";
-
-        guard.detected = canDetect;
-
-        if (canDetect)
-          totalDetect += 1;
-      }
-
-      if (totalDetect > 0)
-        player.detected += dt * 0.9;
-      else
-        player.detected =
-          Math.max(
-            0,
-            player.detected - dt * 0.35);
-
-      detectedElement.classList.toggle(
-        "active",
-        player.detected > 0.15);
-
-      if (player.detected >= 1)
-        catchPlayer();
-    }
-
-    function checkInteractions() {
-      let prompt = "";
-
-      for (const target of powerTargets) {
-        if (!target.collected &&
-            distance(player, target) <
-            55) {
-          prompt =
-            `E — steal ${target.ability}`;
-
+      for (const shrine of shrines) {
+        if (distance(player, shrine) < 65) {
+          text = shrine.discovered
+            ? "Shrine already discovered"
+            : "E — Discover shrine";
           break;
         }
       }
 
-      if (!key.collected &&
-          distance(player, key) < 55) {
-        prompt = "E — collect prison key";
-      }
-
-      if (!treasure.collected &&
-          distance(player, treasure) < 55) {
-        prompt = "E — steal treasure";
-      }
-
-      if (distance(player, exit) < 65 &&
-          key.collected) {
-        prompt = "E — escape";
-      }
-
-      promptElement.textContent = prompt;
-      promptElement.classList.toggle(
-        "visible",
-        prompt.length > 0);
+      promptElement.textContent = text;
+      promptElement.classList.toggle("visible", !!text);
     }
 
     function interact() {
-      for (const target of powerTargets) {
-        if (target.collected)
-          continue;
-
-        if (distance(player, target) < 55) {
-          target.collected = true;
-
-          if (!player.abilities.includes(target.ability))
-            player.abilities.push(target.ability);
-
-          player.activeAbility = target.ability;
-          mission.stage = 1;
-          mission.objective =
-            "Find the prison key";
-
-          showToast(
-            `LIFE STOLEN: ${target.ability.toUpperCase()}`);
-
-          updateHUD();
+      for (const shrine of shrines) {
+        if (!shrine.discovered && distance(player, shrine) < 65) {
+          shrine.discovered = true;
+          objectiveElement.textContent =
+            "Shrine discovered — explore the province";
           return;
         }
       }
-
-      if (!key.collected &&
-          distance(player, key) < 55) {
-        key.collected = true;
-        mission.stage = 2;
-        mission.objective =
-          "Reach the prison exit";
-
-        showToast("PRISON KEY FOUND");
-        updateHUD();
-        return;
-      }
-
-      if (!treasure.collected &&
-          distance(player, treasure) < 55) {
-        treasure.collected = true;
-        player.gold += treasure.value;
-        player.cash += 350;
-        showToast(
-          `TREASURE STOLEN: +${treasure.value} GOLD`);
-
-        updateHUD();
-        return;
-      }
-
-      if (distance(player, exit) < 65 &&
-          key.collected) {
-        win();
-      } else if (distance(player, exit) < 65) {
-        showToast("You need the prison key");
-      }
     }
-
-    function useActiveAbility() {
-      switch (player.activeAbility) {
-        case "Shadow":
-          player.detected =
-            Math.max(
-              0,
-              player.detected - 0.5);
-
-          showToast(
-            "Shadow cloak active");
-          break;
-
-        case "Electricity":
-          for (const guard of guards) {
-            if (distance(player, guard) < 120)
-              guard.detected = false;
-          }
-
-          showToast(
-            "Security systems disrupted");
-          break;
-
-        case "Fire":
-          showToast(
-            "Fire burst ignites the nearby area");
-          break;
-
-        case "Metal":
-          showToast(
-            "Metal skin activated");
-          break;
-
-        default:
-          showToast(
-            "Ability unavailable");
-      }
-    }
-
-    function catchPlayer() {
-      running = false;
-      gameOverScreen.style.display = "grid";
-    }
-
-    function win() {
-      running = false;
-      mission.completed = true;
-      winScreen.style.display = "grid";
-    }
-
-    function distance(a, b) {
-      return Math.hypot(
-        a.x - b.x,
-        a.y - b.y);
-    }
+    addEventListener("keydown", e => {
+      if (e.code === "KeyE") interact();
+    });
 
     function updateCamera() {
-      cameraX =
-        player.x -
-        window.innerWidth / 2;
-
-      cameraY =
-        player.y -
-        window.innerHeight / 2;
-
-      cameraX =
-        Math.max(
-          0,
-          Math.min(
-            WORLD_WIDTH -
-            window.innerWidth,
-            cameraX));
-
-      cameraY =
-        Math.max(
-          0,
-          Math.min(
-            WORLD_HEIGHT -
-            window.innerHeight,
-            cameraY));
-    }
-
-    function draw() {
-      ctx.clearRect(
-        0,
-        0,
-        window.innerWidth,
-        window.innerHeight);
-
-      ctx.save();
-      ctx.translate(
-        -cameraX,
-        -cameraY);
-
-      drawWorld();
-      drawObjects();
-      drawPlayer();
-      drawGuards();
-
-      ctx.restore();
-      drawMinimap();
+      cameraX = player.x - innerWidth / 2;
+      cameraY = player.y - innerHeight / 2;
+      cameraX = Math.max(0, Math.min(WORLD - innerWidth, cameraX));
+      cameraY = Math.max(0, Math.min(WORLD - innerHeight, cameraY));
     }
 
     function drawWorld() {
-      ctx.fillStyle = "#10182d";
-      ctx.fillRect(
-        0,
-        0,
-        WORLD_WIDTH,
-        WORLD_HEIGHT);
+      ctx.fillStyle = "#6f9061";
+      ctx.fillRect(0, 0, WORLD, WORLD);
 
-      ctx.strokeStyle =
-        "rgba(84, 229, 255, 0.035)";
-      ctx.lineWidth = 1;
-
-      for (let x = 0;
-           x < WORLD_WIDTH;
-           x += 50) {
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, WORLD_HEIGHT);
-        ctx.stroke();
+      // Grass patches
+      ctx.fillStyle = "#849d66";
+      for (let y = 50; y < WORLD; y += 120) {
+        for (let x = 50; x < WORLD; x += 120) {
+          const variation = ((x * 13 + y * 7) % 50);
+          ctx.fillRect(x + variation / 2, y, 34, 25);
+        }
       }
 
-      for (let y = 0;
-           y < WORLD_HEIGHT;
-           y += 50) {
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(WORLD_WIDTH, y);
-        ctx.stroke();
-      }
+      // Main roads
+      ctx.fillStyle = "#b69b72";
+      ctx.fillRect(0, 1120, WORLD, 100);
+      ctx.fillRect(1120, 0, 100, WORLD);
 
-      ctx.fillStyle = "#1a2234";
-      ctx.fillRect(
-        PRISON_X,
-        PRISON_Y,
-        PRISON_WIDTH,
-        PRISON_HEIGHT);
-
-      ctx.fillStyle = "#202a3f";
-      ctx.fillRect(
-        PRISON_X + 25,
-        PRISON_Y + 25,
-        PRISON_WIDTH - 50,
-        PRISON_HEIGHT - 50);
-
-      ctx.fillStyle = "#1c2638";
-
-      for (let y = 280;
-           y < 730;
-           y += 65) {
-        ctx.fillRect(
-          415,
-          y,
-          110,
-          45);
-      }
-
-      ctx.fillStyle =
-        "rgba(84, 229, 255, 0.07)";
-      ctx.fillRect(
-        exit.x - 45,
-        exit.y - 45,
-        90,
-        90);
-
-      ctx.strokeStyle =
-        "#54e5ff";
-      ctx.lineWidth = 3;
-      ctx.strokeRect(
-        exit.x - 45,
-        exit.y - 45,
-        90,
-        90);
-
-      ctx.fillStyle =
-        "#54e5ff";
-      ctx.font =
-        "bold 15px Arial";
-      ctx.textAlign =
-        "center";
-      ctx.fillText(
-        "EXIT",
-        exit.x,
-        exit.y + 6);
-
-      for (const wall of walls) {
-        ctx.fillStyle = "#3b4659";
-        ctx.fillRect(
-          wall.x,
-          wall.y,
-          wall.w,
-          wall.h);
-
-        ctx.fillStyle =
-          "rgba(255,255,255,0.08)";
-        ctx.fillRect(
-          wall.x,
-          wall.y,
-          wall.w,
-          4);
-      }
-    }
-
-    function drawObjects() {
-      for (const target of powerTargets) {
-        if (target.collected)
-          continue;
-
-        ctx.beginPath();
-        ctx.fillStyle =
-          "#58dcff";
-        ctx.shadowColor =
-          "#58dcff";
-        ctx.shadowBlur =
-          18;
-        ctx.arc(
-          target.x,
-          target.y,
-          target.radius,
-          0,
-          Math.PI * 2);
-        ctx.fill();
-        ctx.shadowBlur =
-          0;
-
-        ctx.fillStyle =
-          "#07101f";
-        ctx.font =
-          "bold 22px Arial";
-        ctx.textAlign =
-          "center";
-        ctx.textBaseline =
-          "middle";
-        ctx.fillText(
-          target.symbol,
-          target.x,
-          target.y);
-      }
-
-      if (!key.collected) {
-        ctx.beginPath();
-        ctx.fillStyle =
-          "#ffc857";
-        ctx.shadowColor =
-          "#ffc857";
-        ctx.shadowBlur =
-          15;
-        ctx.arc(
-          key.x,
-          key.y,
-          key.radius,
-          0,
-          Math.PI * 2);
-        ctx.fill();
-        ctx.shadowBlur =
-          0;
-
-        ctx.fillStyle =
-          "#3c2a08";
-        ctx.fillRect(
-          key.x - 2,
-          key.y - 8,
-          4,
-          16);
-        ctx.fillRect(
-          key.x - 2,
-          key.y + 4,
-          9,
-          3);
-      }
-
-      if (!treasure.collected) {
-        ctx.beginPath();
-        ctx.fillStyle =
-          "#d9a441";
-        ctx.shadowColor =
-          "#ffdc78";
-        ctx.shadowBlur =
-          16;
-        ctx.arc(
-          treasure.x,
-          treasure.y,
-          treasure.radius,
-          0,
-          Math.PI * 2);
-        ctx.fill();
-        ctx.shadowBlur =
-          0;
-
-        ctx.fillStyle =
-          "#fff2a5";
-        ctx.font =
-          "bold 18px Arial";
-        ctx.textAlign =
-          "center";
-        ctx.textBaseline =
-          "middle";
-        ctx.fillText(
-          "$",
-          treasure.x,
-          treasure.y);
-      }
-    }
-
-    function drawPlayer() {
-      ctx.save();
-      ctx.translate(
-        player.x,
-        player.y);
-      ctx.rotate(
-        player.angle);
-
+      // Rivers
+      ctx.fillStyle = "#6496a3";
       ctx.beginPath();
+      ctx.moveTo(520, 0);
+      ctx.bezierCurveTo(700, 650, 360, 1300, 650, WORLD);
+      ctx.lineWidth = 130;
+      ctx.strokeStyle = "#6496a3";
+      ctx.stroke();
 
-      ctx.fillStyle =
-        player.activeAbility === "Shadow"
-          ? "rgba(18, 27, 48, 0.72)"
-          : "#54baff";
+      // Villages
+      for (const village of villages) {
+        ctx.fillStyle = "#d1b98c";
+        ctx.fillRect(village.x, village.y, village.w, village.h);
+        ctx.fillStyle = "#5f523e";
+        ctx.font = "bold 20px Georgia";
+        ctx.fillText(village.name, village.x + 20, village.y + 35);
+      }
 
-      ctx.shadowColor =
-        ctx.fillStyle;
-      ctx.shadowBlur =
-        player.activeAbility === "Shadow"
-          ? 12
-          : 5;
-
-      ctx.arc(
-        0,
-        0,
-        player.radius *
-        (player.crouching ? 0.75 : 1),
-        0,
-        Math.PI * 2);
-
-      ctx.fill();
-      ctx.shadowBlur =
-        0;
-
-      ctx.fillStyle =
-        "#dcecff";
-      ctx.fillRect(
-        5,
-        -4,
-        13,
-        8);
-
-      ctx.restore();
-    }
-
-    function drawGuards() {
-      for (const guard of guards) {
-        ctx.save();
-        ctx.translate(
-          guard.x,
-          guard.y);
-        ctx.rotate(
-          guard.angle);
-
+      // Japanese-inspired buildings
+      for (const b of buildings) {
+        ctx.fillStyle = "#c3a878";
+        ctx.fillRect(b.x, b.y, b.w, b.h);
+        ctx.fillStyle = "#2f3b30";
         ctx.beginPath();
-        ctx.fillStyle =
-          guard.detected
-            ? "#ff4d69"
-            : "#dca85c";
-
-        ctx.arc(
-          0,
-          0,
-          guard.radius,
-          0,
-          Math.PI * 2);
-
-        ctx.fill();
-
-        ctx.fillStyle =
-          "#4b3021";
-        ctx.fillRect(
-          7,
-          -4,
-          16,
-          8);
-
-        ctx.restore();
-
-        ctx.beginPath();
-        ctx.moveTo(
-          guard.x,
-          guard.y);
-
-        ctx.arc(
-          guard.x,
-          guard.y,
-          guard.detectRange,
-          guard.angle -
-          0.45,
-          guard.angle +
-          0.45);
-
+        ctx.moveTo(b.x - 10, b.y);
+        ctx.lineTo(b.x + b.w / 2, b.y - 38);
+        ctx.lineTo(b.x + b.w + 10, b.y);
         ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = "#7e5e42";
+        ctx.fillRect(b.x + b.w / 2 - 8, b.y + b.h - 34, 16, 34);
+      }
 
-        ctx.fillStyle =
-          guard.detected
-            ? "rgba(255, 80, 100, 0.12)"
-            : "rgba(255, 214, 130, 0.055)";
+      // Shrines
+      for (const shrine of shrines) {
+        ctx.fillStyle = shrine.discovered ? "#718bb2" : "#d7c16a";
+        ctx.fillRect(shrine.x - 18, shrine.y - 8, 36, 16);
+        ctx.beginPath();
+        ctx.arc(shrine.x, shrine.y - 18, 18, 0, Math.PI * 2);
         ctx.fill();
       }
+
+      // Cherry-like trees
+      ctx.fillStyle = "#273f2d";
+      for (let i = 0; i < 220; i++) {
+        const x = (i * 187 + 90) % WORLD;
+        const y = (i * 313 + 140) % WORLD;
+        if (Math.abs(x - 620) < 100 && Math.abs(y - 400) < 100) continue;
+        ctx.beginPath();
+        ctx.arc(x, y, 18 + i % 9, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Player
+      ctx.save();
+      ctx.translate(player.x, player.y);
+      ctx.rotate(player.angle);
+      ctx.fillStyle = player.crouching ? "#233927" : "#3e5d42";
+      ctx.beginPath();
+      ctx.arc(0, 0, player.crouching ? 9 : 12, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#d6bd82";
+      ctx.beginPath();
+      ctx.arc(5, 0, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      // Scouts
+      for (const scout of scouts) {
+        ctx.fillStyle = scout.detected > 0.15 ? "#c46d55" : "#4e4b68";
+        ctx.beginPath();
+        ctx.arc(scout.x, scout.y, 11, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, innerWidth, innerHeight);
+      ctx.save();
+      ctx.translate(-cameraX, -cameraY);
+      drawWorld();
+      ctx.restore();
+
+      drawMinimap();
     }
 
     function drawMinimap() {
-      mapCtx.clearRect(
-        0,
-        0,
-        170,
-        170);
+      miniCtx.fillStyle = "#243728";
+      miniCtx.fillRect(0, 0, 170, 170);
 
-      mapCtx.fillStyle =
-        "#09101d";
-      mapCtx.fillRect(
-        0,
-        0,
-        170,
-        170);
+      miniCtx.fillStyle = "#c1a476";
+      miniCtx.fillRect(0, 79, 170, 8);
+      miniCtx.fillRect(79, 0, 8, 170);
 
-      const scale =
-        170 / WORLD_WIDTH;
+      miniCtx.fillStyle = "#6496a3";
+      miniCtx.beginPath();
+      miniCtx.moveTo(35, 0);
+      miniCtx.lineTo(48, 170);
+      miniCtx.strokeStyle = "#6496a3";
+      miniCtx.lineWidth = 10;
+      miniCtx.stroke();
 
-      mapCtx.fillStyle =
-        "#27334a";
-      mapCtx.fillRect(
-        PRISON_X * scale,
-        PRISON_Y * scale,
-        PRISON_WIDTH * scale,
-        PRISON_HEIGHT * scale);
-
-      mapCtx.fillStyle =
-        "#54e5ff";
-
-      mapCtx.beginPath();
-      mapCtx.arc(
-        player.x * scale,
-        player.y * scale,
-        4,
-        0,
-        Math.PI * 2);
-      mapCtx.fill();
-
-      mapCtx.fillStyle =
-        "#ff5574";
-
-      for (const guard of guards) {
-        mapCtx.beginPath();
-        mapCtx.arc(
-          guard.x * scale,
-          guard.y * scale,
+      for (const shrine of shrines) {
+        if (shrine.discovered) continue;
+        miniCtx.fillStyle = "#e2cb78";
+        miniCtx.beginPath();
+        miniCtx.arc(
+          shrine.x / WORLD * 170,
+          shrine.y / WORLD * 170,
           3,
           0,
-          Math.PI * 2);
-        mapCtx.fill();
+          Math.PI * 2
+        );
+        miniCtx.fill();
       }
 
-      if (key.collected) {
-        mapCtx.fillStyle =
-          "#ffc857";
-        mapCtx.beginPath();
-        mapCtx.arc(
-          exit.x * scale,
-          exit.y * scale,
-          5,
-          0,
-          Math.PI * 2);
-        mapCtx.fill();
-      }
+      miniCtx.fillStyle = "#ffffff";
+      miniCtx.beginPath();
+      miniCtx.arc(
+        player.x / WORLD * 170,
+        player.y / WORLD * 170,
+        5,
+        0,
+        Math.PI * 2
+      );
+      miniCtx.fill();
     }
 
+    let previous = 0;
     function loop(time) {
-      if (!running)
-        return;
-
-      const dt =
-        Math.min(
-          (time - lastTime) / 1000,
-          0.033);
-
-      lastTime =
-        time;
-
+      const dt = Math.min((time - previous) / 1000 || 0, 0.05);
+      previous = time;
       update(dt);
       draw();
-
       requestAnimationFrame(loop);
     }
-
-    window.addEventListener(
-      "resize",
-      resize);
-
-    window.addEventListener(
-      "keydown",
-      event => {
-        if (["ArrowUp",
-             "ArrowDown",
-             "ArrowLeft",
-             "ArrowRight",
-             "Space"].includes(
-               event.code))
-          event.preventDefault();
-
-        keys[event.code] =
-          true;
-
-        if (event.code === "KeyE")
-          interact();
-
-        if (event.code === "KeyQ")
-          useActiveAbility();
-
-        if (/^Digit[1-5]$/.test(event.code)) {
-          const index =
-            Number(event.code.slice(-1)) - 1;
-
-          if (player.abilities[index]) {
-            player.activeAbility =
-              player.abilities[index];
-
-            showToast(
-              `Active: ${player.activeAbility}`);
-
-            updateHUD();
-          }
-        }
-
-        if (event.code === "Escape" &&
-            running) {
-          paused = !paused;
-          showToast(
-            paused
-              ? "GAME PAUSED"
-              : "GAME RESUMED");
-        }
-      });
-
-    window.addEventListener(
-      "keyup",
-      event => {
-        keys[event.code] =
-          false;
-      });
-
-    document
-      .getElementById("start-button")
-      .addEventListener(
-        "click",
-        startGame);
-
-    document
-      .getElementById("retry-button")
-      .addEventListener(
-        "click",
-        startGame);
-
-    document
-      .getElementById("continue-button")
-      .addEventListener(
-        "click",
-        startGame);
-
-    resize();
-    resetGame();
   </script>
 </body>
 </html>
